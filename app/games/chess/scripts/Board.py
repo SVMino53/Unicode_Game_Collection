@@ -1,0 +1,51 @@
+# Code by Isak Forsberg. Last updated 2025-09-16.
+
+from typing import Literal
+from scripts.Piece import Piece
+
+
+
+class Board:
+    def __init__(self, p1_color : str) -> None:
+        self.p1Color = p1_color
+        if p1_color == 'white':
+            self.p2Color = 'black'
+            piece_setup = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook']
+        else:
+            self.p2Color = 'white'
+            piece_setup = ['rook', 'knight', 'bishop', 'king', 'queen', 'bishop', 'knight', 'rook']
+        self.lastMoved = None
+        self.pieces = [[Piece(piece_setup[i], self.p2Color, 0, i) for i in range(8)]]  # 2d list of the pieces on the board.
+        self.pieces.append([Piece('pawn', self.p2Color, 1, i) for i in range(8)])
+        for _ in range(4):
+            self.pieces.append([None for _ in range(8)])
+        self.pieces.append([Piece('pawn', self.p1Color, 6, i) for i in range(8)])
+        self.pieces.append([Piece(piece_setup[i], self.p1Color, 7, i) for i in range(8)])
+
+    def __str__(self) -> str:
+        output = '\n'*5 + ' '*2 + '-'*33 + '\n'
+        for i in range(8):
+            if self.p1Color == 'white':
+                output += f'{8 - i}'
+            else:
+                output += f'{1 + i}'
+            output += ' | '
+            for p in self.pieces[i]:
+                if p == None:
+                    output += ' '
+                else:
+                    output += str(p)
+                
+                output += ' | '
+            output += '\n' + ' '*2 + '-'*33 + '\n'
+        if self.p1Color == 'white':
+            output += '    A   B   C   D   E   F   G   H\n'
+        else:
+            output += '    H   G   F   E   D   C   B   A\n'
+        return output
+    # def copyBoard(board : Board) -> Board:
+    #     copy = Board(board.p1Color)
+    #     copy.pieces = []
+    #     for l in board.pieces:
+    #         copy.pieces.append([p for p in l])
+    #     copy.lastMoved = board.lastMoved
