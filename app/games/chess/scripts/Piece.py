@@ -17,48 +17,46 @@ class Piece:
             color : Literal["white", "black"], 
             row : int, 
             col : int) -> None:
-        self.pieceType = piece_type
+        self.piece_type = piece_type
         self.color = color
         self.row = row
         self.col = col
         self.moves = 0
-        self.setChar()
-        self.setValue()
 
     def __str__(self) -> str:
         return self.char
 
-    def setChar(self):
+    def set_char(self):
         if self.color == 'white':
             self.char = ord('\u265a')   # White king sympol
         else:
             self.char = ord('\u2654')   # Black king symbol
-        if self.pieceType == 'queen':
+        if self.piece_type == 'queen':
             self.char += 1
-        elif self.pieceType == 'rook':
+        elif self.piece_type == 'rook':
             self.char += 2
-        elif self.pieceType == 'bishop':
+        elif self.piece_type == 'bishop':
             self.char += 3
-        elif self.pieceType == 'knight':
+        elif self.piece_type == 'knight':
             self.char += 4
-        elif self.pieceType == 'pawn':
+        elif self.piece_type == 'pawn':
             self.char += 5
         self.char = chr(self.char)
     
-    def setValue(self):
-        if self.pieceType == 'pawn':
+    def set_value(self):
+        if self.piece_type == 'pawn':
             self.value = 1
-        elif self.pieceType == 'rook':
+        elif self.piece_type == 'rook':
             self.value = 5
-        elif self.pieceType in ['knight', 'pishop']:
+        elif self.piece_type in ['knight', 'pishop']:
             self.value = 3
-        elif self.pieceType == 'queen':
+        elif self.piece_type == 'queen':
             self.value = 8
         else:
             self.value = 100
 
     def promote(self, piece_type) -> None:
         """Exclusively for pawns! Promotes pawn to a given higher rank piece."""
-        self.pieceType = piece_type
-        self.setChar()
-        self.setValue()
+        self.piece_type = piece_type
+        self.set_char()
+        self.set_value()

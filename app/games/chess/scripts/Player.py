@@ -1,6 +1,6 @@
 # Code by Isak Forsberg. Last updated 2024-06-16.
 
-from typing import Literal
+# from typing import Literal
 
 
 
@@ -18,8 +18,9 @@ class AI:
         self.width = width
         self.color = color
 
-    def testMove(self, board, player2move):
+    def testMove(self, board, player_to_move):
         pass
     
     def calculateMove(self, board, eval):
-        maxScore = -100
+        # maxScore = -100
+        pass

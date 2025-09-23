@@ -1,123 +1,123 @@
 # Code by Isak Forsberg. Last updated 2025-09-16.
 
-from typing import Literal
+# from typing import Literal
 from scripts.Board import Board
 from scripts.Player import Player, AI
-from scripts.Piece import Piece
+# from scripts.Piece import Piece
 
 
 
 class Game:
     def __init__(self) -> None:
-        self.gameMode : int = 0             # 1 = Player vs Player; 2 = Player vs AI; 3 = AI vs AI
+        self.game_mode : int = 0            # 1 = Player vs Player; 2 = Player vs AI; 3 = AI vs AI
         self.board : Board = None           # Chess board
         self.players : list[Player] = []    # Human players currently playing
         self.ais : list[AI] = []            # AIs currently playing
-        self.toMove = 'white'
-        self.curPl = None                   # Whoever's move it is currently
+        self.to_move = 'white'
+        self.cur_player = None              # Whoever's move it is currently
         self.eval : int = 0                 # The game evaluation
         self.inp = ''                       # User input
 
-    def movePiece(self, p_color : str, fromCo : str, toCo : str) -> bool:
-        if self.board.p1Color == 'white':
-            fRow = 8 - int(fromCo[1])
-            fCol = ord(fromCo[0].lower()) - 97
-            tRow = 8 - int(toCo[1])
-            tCol = ord(toCo[0].lower()) - 97
+    def movePiece(self, player_color : str, from_square : str, to_square : str) -> bool:
+        if self.board.p1_color == 'white':
+            from_row = 8 - int(from_square[1])
+            from_col = ord(from_square[0].lower()) - 97
+            to_row = 8 - int(to_square[1])
+            to_col = ord(to_square[0].lower()) - 97
         else:
-            fRow = int(fromCo[1]) - 1
-            fCol = 105 - ord(fromCo[0].lower())
-            tRow = int(toCo[1]) - 1
-            tCol = 105 - ord(toCo[0].lower())
-        p = self.board.pieces[fRow][fCol]
-        if p == None:
+            from_row = int(from_square[1]) - 1
+            from_col = 105 - ord(from_square[0].lower())
+            to_row = int(to_square[1]) - 1
+            to_col = 105 - ord(to_square[0].lower())
+        piece = self.board.pieces[from_row][from_col]
+        if piece is None:
             print('Selected square is empty!\n')
             return False
-        elif p.color != p_color:
+        elif piece.color != player_color:
             print('That\'s not your piece!\n')
             return False
         else:
-            s = self.board.pieces[tRow][tCol]
-            rel = (tRow - fRow, tCol - fCol)
-            if p_color == self.board.p1Color:
-                dirMult = -1
+            s = self.board.pieces[to_row][to_col]
+            rel = (to_row - from_row, to_col - from_col)
+            if player_color == self.board.p1_color:
+                dir_mult = -1
             else:
-                dirMult = 1
-            canMove = False
-            if p.pieceType == 'pawn':
-                if (rel == (dirMult, 0) and s == None or
-                    rel == (dirMult, -1) and s != None and p.color != s.color or
-                    rel == (dirMult, -1) and s == None and self.board.pieces[tRow - dirMult][tCol] == self.lastMoved or
-                    rel == (dirMult, 1) and s != None and p.color != s.color or
-                    rel == (dirMult, 1) and s == None and self.board.pieces[tRow - dirMult][tCol] == self.lastMoved or
-                    rel == (2*dirMult, 0) and p.moves == 0 and self.board.pieces[fRow + dirMult][fCol] == None and s == None):
-                    canMove = True
-            elif p.pieceType == 'rook':
+                dir_mult = 1
+            can_move = False
+            if piece.piece_type == 'pawn':
+                if (rel == (dir_mult, 0) and s is None or
+                    rel == (dir_mult, -1) and s is not None and piece.color != s.color or
+                    rel == (dir_mult, -1) and s is None and self.board.pieces[to_row - dir_mult][to_col] == self.last_moved or
+                    rel == (dir_mult, 1) and s is not None and piece.color != s.color or
+                    rel == (dir_mult, 1) and s is None and self.board.pieces[to_row - dir_mult][to_col] == self.last_moved or
+                    rel == (2*dir_mult, 0) and piece.moves == 0 and self.board.pieces[from_row + dir_mult][from_col] is None and s is None):
+                    can_move = True
+            elif piece.piece_type == 'rook':
                 if rel[0] == 0 or rel[1] == 0:
                     dist = max(abs(rel[0]), abs(rel[1]))
                     dirc = (rel[0] // dist, rel[1] // dist)
-                    isBlocked = False
+                    is_blocked = False
                     for i in range(1, dist):
-                        if self.board.pieces[fRow + dirc[0]*i][fCol + dirc[1]*i] != None:
-                            isBlocked = True
+                        if self.board.pieces[from_row + dirc[0]*i][from_col + dirc[1]*i] is not None:
+                            is_blocked = True
                             break
-                    if not isBlocked and (s == None or p.color != s.color):
-                        canMove = True
-            elif p.pieceType == 'knight':
+                    if not is_blocked and (s is None or piece.color != s.color):
+                        can_move = True
+            elif piece.piece_type == 'knight':
                 if abs(rel[0]) == 1 and abs(rel[1]) == 2 or abs(rel[0]) == 2 and abs(rel[1]) == 1:
-                    if s == None or p.color != s.color:
-                        canMove = True
-            elif p.pieceType == 'bishop':
+                    if s is None or piece.color != s.color:
+                        can_move = True
+            elif piece.piece_type == 'bishop':
                 if abs(rel[0]) == abs(rel[1]):
                     dist = abs(rel[0])
                     dirc = (rel[0] // dist, rel[1] // dist)
-                    isBlocked = False
+                    is_blocked = False
                     for i in range(1, dist):
-                        if self.board.pieces[fRow + dirc[0]*i][fCol + dirc[1]*i] != None:
-                            isBlocked = True
+                        if self.board.pieces[from_row + dirc[0]*i][from_col + dirc[1]*i] is not None:
+                            is_blocked = True
                             break
-                    if not isBlocked and (s == None or p.color != s.color):
+                    if not is_blocked and (s is None or piece.color != s.color):
                         return True
-            elif p.pieceType == 'queen':
+            elif piece.piece_type == 'queen':
                 if rel[0] == 0 or rel[1] == 0 or abs(rel[0]) == abs(rel[1]):
                     dist = max(abs(rel[0]), abs(rel[1]))
                     dirc = (rel[0] // dist, rel[1] // dist)
-                    isBlocked = False
+                    is_blocked = False
                     for i in range(1, dist):
-                        if self.board.pieces[fRow + dirc[0]*i][fCol + dirc[1]*i] != None:
-                            isBlocked = True
+                        if self.board.pieces[from_row + dirc[0]*i][from_col + dirc[1]*i] is not None:
+                            is_blocked = True
                             break
-                    if not isBlocked and (s == None or p.color != s.color):
+                    if not is_blocked and (s is None or piece.color != s.color):
                         return True
-            elif p.pieceType == 'king':
+            elif piece.piece_type == 'king':
                 if (abs(rel[0]) < 2 and abs(rel[1]) < 2 or
-                    rel[1] == 2 and p.moves == 0 and self.board[p.row][p.col + 1:] == [None, None]):
-                    if s == None or p.color != s.color:
-                        canMove = True
-        if canMove:
-            if p.pieceType == 'pawn':
-                if abs(rel[1]) == 1 and self.board.pieces[tRow][tCol] == None:
-                    self.pieces[tRow - 1][tCol] = None
+                    rel[1] == 2 and piece.moves == 0 and self.board[piece.row][piece.col + 1:] == [None, None]):
+                    if s is None or piece.color != s.color:
+                        can_move = True
+        if can_move:
+            if piece.piece_type == 'pawn':
+                if abs(rel[1]) == 1 and self.board.pieces[to_row][to_col] is None:
+                    self.pieces[to_row - 1][to_col] = None
                     print('An passant!\n')
-                elif (p.color == self.board.p1Color and tRow == 7 or
-                    p.color == self.board.p2Color and tRow == 0):
+                elif (piece.color == self.board.p1_color and to_row == 7 or
+                    piece.color == self.board.p2_color and to_row == 0):
                     inp = input('Promotion! What should your pawn promote to?\n"q" -> Queen\n"r" -> Rook\n"b" -> Bishop\n"n" -> Knight\n>>> ')
-                    while not inp.lower() in ['q', 'r', 'b', 'n']:
+                    while inp.lower() not in ['q', 'r', 'b', 'n']:
                         inp = input('Invalid input! Please type "q", "r", "b" or "n" to promote your pawn.\n>>> ').lower()
                     if inp == 'q':
-                        pType = 'queen'
+                        piece_type = 'queen'
                     elif inp == 'r':
-                        pType = 'rook'
+                        piece_type = 'rook'
                     elif inp == 'b':
-                        pType == 'bishop'
+                        piece_type == 'bishop'
                     else:
-                        pType == 'knight'
-                    p.promote(pType)
+                        piece_type == 'knight'
+                    piece.promote(piece_type)
             # Castling
-            p.moves += 1
-            self.board.pieces[fRow][fCol] = None
-            self.board.pieces[tRow][tCol] = p
-            self.lastMoved = p
+            piece.moves += 1
+            self.board.pieces[from_row][from_col] = None
+            self.board.pieces[to_row][to_col] = piece
+            self.last_moved = piece
             return True
         else:
             print('Cannot move piece!\n')
@@ -135,31 +135,31 @@ class Game:
             if self.inp == 'new':
                 self.players = []
                 self.ais = []
-                self.toMove = 'white'
+                self.to_move = 'white'
                 self.inp = input('How do you want to play? [1, 2, 3]\n1: Player vs Player\n2: Player vs AI\n3: AI vs AI\n>>> ')
-                while not self.inp in ['1', '2', '3']:
+                while self.inp not in ['1', '2', '3']:
                     self.inp = input('Invalid input! Please type "1", "2" or "3" to choose a game mode.\n>>> ')
-                self.gameMode = int(self.inp)
-                if self.gameMode <= 2:  # Player 1 is human.
+                self.game_mode = int(self.inp)
+                if self.game_mode <= 2:  # Player 1 is human.
                     name1 = input('Nice! What is your name player 1?\n>>> ')
                     while not self.inp == 'y':
                         self.inp = input(f'"{name1}". Did I get that right? [y, n]\n>>> ').lower()
-                        while not self.inp in ['y', 'n']:
+                        while self.inp not in ['y', 'n']:
                             self.inp = input('Invalid input! Please type "y" (yes) or "n" (no).\n>>> ').lower()
                         if self.inp == 'n':
                             name1 = input('Sorry! I must have missheard you. What is your name then player 1?\n>>> ')
                     self.inp = input('Ok, cool! And what color of pieces will you play with? [w, b]\n>>> ').lower()
-                    while not self.inp in ['w', 'b']:
+                    while self.inp not in ['w', 'b']:
                         self.inp = input('Invalid input! Please type "w" (white) or "b" (black).\n>>> ').lower()
                     if self.inp == 'w':
                         self.players.append(Player(name1, 'white'))
                     else:
                         self.players.append(Player(name1, 'black'))
-                    if self.gameMode == 1:  # Player 2 is human.
+                    if self.game_mode == 1:  # Player 2 is human.
                         name2 = input(f'Thank you {name1}! Now, player 2, what is your name?\n>>> ')
                         while not self.inp == 'y':
                             self.inp = input(f'"{name2}". Did I get that right? [y, n]\n>>> ').lower()
-                            while not self.inp in ['y', 'n']:
+                            while self.inp not in ['y', 'n']:
                                 self.inp = input('Invalid input! Please type "y" (yes) or "n" (no).\n>>> ').lower()
                             if self.inp == 'n':
                                 name2 = input('Sorry! I must have missheard you. What is your name then player 2?\n>>> ')
@@ -183,7 +183,7 @@ class Game:
                             self.ais.append(AI(d, w, 'white'))
                     self.board = Board(self.players[0].color)
                 else:  # Both players are AI.
-                    w = input(f'Cool! How advanced should the first AI be? First write its width. (Higher value makes it slower!)\n>>> ')
+                    w = input('Cool! How advanced should the first AI be? First write its width. (Higher value makes it slower!)\n>>> ')
                     while not w.isdigit() or w < 1:
                         w = input('Invalid input! Please type an integer greater than 0.\n>>> ')
                     w = int(w)
@@ -192,13 +192,13 @@ class Game:
                         d = input('Invalid input! Please type an integer greater than 0.\n>>> ')
                     d = int(d)
                     self.inp = input('And which color of pieces should the first AI play as? [w, b]\n>>> ').lower()
-                    while not self.inp in ['w', 'b']:
+                    while self.inp not in ['w', 'b']:
                         self.inp = input('Invalid input! Please type "w" (white) or "b" (black).\n>>> ').lower()
                     if self.inp == 'w':
                         self.ais.append(AI(d, w, 'white'))
                     else:
                         self.ais.append(AI(d, w, 'black'))
-                    w = input(f'Super duper! How advanced should the second AI be? First write its width. (Higher value makes it slower!)\n>>> ')
+                    w = input('Super duper! How advanced should the second AI be? First write its width. (Higher value makes it slower!)\n>>> ')
                     while not w.isdigit() or w < 1:
                         w = input('Invalid input! Please type an integer greater than 0.\n>>> ')
                     w = int(w)
@@ -214,23 +214,23 @@ class Game:
 
     def play(self):
         print('Alright! Let\'s play! :D\n')
-        while not self.inp in ['quit', 'new']:
+        while self.inp not in ['quit', 'new']:
             print(self.board)
-            if len(self.players) >= 1 and self.players[0].color == self.toMove:
-                self.curPl = self.players[0]
-            elif len(self.players) == 2 and self.players[1].color == self.toMove:
-                self.curPl = self.players[1]
-            elif self.ais[0].color == self.toMove:
-                self.curPl = self.ais[0]
+            if len(self.players) >= 1 and self.players[0].color == self.to_move:
+                self.cur_player = self.players[0]
+            elif len(self.players) == 2 and self.players[1].color == self.to_move:
+                self.cur_player = self.players[1]
+            elif self.ais[0].color == self.to_move:
+                self.cur_player = self.ais[0]
             else:
-                self.curPl = self.ais[1]
-            print(f'It\'s your turn {self.curPl.name}!')
+                self.cur_player = self.ais[1]
+            print(f'It\'s your turn {self.cur_player.name}!')
             self.inp = input('What would you like to do? [move, view, reset, quit]\n>>> ').lower()
-            while not self.inp in ['move', 'view', 'reset', 'quit']:
+            while self.inp not in ['move', 'view', 'reset', 'quit']:
                 self.inp = input('Invalid input! Please type "move", "view", "reset" or "quit".\n>>> ').lower()
             if self.inp == 'reset':
                 self.inp = input('Are you super sure you want to reset the game? This game will not be saved. [y, n]\n>>> ').lower()
-                while not self.inp in ['y', 'n']:
+                while self.inp not in ['y', 'n']:
                     self.inp = input('Invalid input! Please type "y" (yes) or "n" (no).\n>>> ').lower()
                 if self.inp == 'y':
                     print()
@@ -238,35 +238,35 @@ class Game:
                     return
             elif self.inp == 'quit':
                 self.inp = input('Are you super sure you want to quit the game? This game will not be saved. [y, n]\n>>> ').lower()
-                while not self.inp in ['y', 'n']:
+                while self.inp not in ['y', 'n']:
                     self.inp = input('Invalid input! Please type "y" (yes) or "n" (no).\n>>> ').lower()
                 if self.inp == 'y':
                     print()
                     self.inp = 'quit'
                     return
             elif self.inp == 'move':
-                hasMoved = False
-                while not hasMoved:
-                    if self.curPl in self.players:
+                has_moved = False
+                while not has_moved:
+                    if self.cur_player in self.players:
                         self.inp = input('Select the piece you want to move. (Example: "a6")\n>>> ').lower()
                         let = 'abcdefgh'
                         num = '12345678'
-                        while len(self.inp) != 2 or not self.inp[0] in let or not self.inp[1] in num:
+                        while len(self.inp) != 2 or self.inp[0] not in let or self.inp[1] not in num:
                             print('Invalid input! Input has to be a letter between a-h followed by a digit between 1-8.')
                             print('Examples of valid inputs: "a6", "h8", "A1", "D4".')
                             self.inp = input('Please type the coordinates of a valid piece.\n>>> ').lower()
-                        fromCo = self.inp
+                        from_square = self.inp
                         self.inp = input('Where should the piece move? (Type "undo" to select another piece.)\n>>> ').lower()
-                        while self.inp != 'undo' and (len(self.inp) != 2 or not self.inp[0] in let or not self.inp[1] in num):
+                        while self.inp != 'undo' and (len(self.inp) != 2 or self.inp[0] not in let or self.inp[1] not in num):
                             print('Invalid input! Input has to be a letter between a-h followed by a digit between 1-8.')
                             print('Examples of valid inputs: "a6", "h8", "A1", "D4". (Type "undo" to slect another piece.)')
                             self.inp = input('Please type he coordinates of a valid piece\n>>> ').lower()
                         if self.inp != 'undo':
-                            toCo = self.inp
-                            hasMoved = self.movePiece(self.toMove, fromCo, toCo)
+                            to_square = self.inp
+                            has_moved = self.movePiece(self.to_move, from_square, to_square)
                     else:
-                        self.curPl.calculateMove(self.board, self.eval)
-                if self.toMove == 'white':
-                    self.toMove = 'black'
+                        self.cur_player.calculateMove(self.board, self.eval)
+                if self.to_move == 'white':
+                    self.to_move = 'black'
                 else:
-                    self.toMove = 'white'
+                    self.to_move = 'white'

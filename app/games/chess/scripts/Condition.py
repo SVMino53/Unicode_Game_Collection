@@ -1,6 +1,6 @@
 # Code made by Isak Forsberg. Last updated 2025-09-16.
 
-from typing import Literal, Self
+from typing import Literal #, Self
 
 
 
@@ -27,7 +27,7 @@ class Condition:
     def check(self) -> bool:
         pass
 
-class CEmpty(Condition):
+class Empty(Condition):
     def __init__(self, location_type: Literal["exact", "relative", "direction"], row: int, col: int, not_case: bool = False):
         # super().__init__(type, params, not_case)
         pass
